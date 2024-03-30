@@ -1,3 +1,4 @@
+import OpenAI from 'openai';
 const express= require('express');
 const cors=require('cors');
 const http=require('http');
@@ -10,16 +11,23 @@ const {default: helmet}=require('helmet');
 //servidor
 const server=http.createServer(app);
 dotenv.config();
+
 //middleware (para procesos cliente - servidor)
 app.use(express.json());
 app.use(helmet());
 
+//IA
+const openai=require("openai");
+
+
+
+//Puerto
 const PORT=process.env.PORT || 9000;
 server.listen(PORT,()=>{
     console.log(`Corriendo en el puerto: ${PORT}`);
 })
 
-//
+//Funciones HTTP
 app.get("/",async(req,res)=>{
     try {
         console.log(":D");
@@ -37,10 +45,33 @@ app.post("/",async(req,res)=>{
     try{
         //console.log(consulta);
         console.log(descripcionCompleta);
-        res.status(200).json({mensaje: "Datos limpios", descripcionCompleta});
+        //res.status(200).json({mensaje: "Datos limpios", descripcionCompleta});
+
+        //IA
+        const api_url = "https://api.openai.com/v1/engines/g-zqhE73Pwg-nom-035/completions";
+        const headers = {
+            'Authorization': process.env.APIKEY,
+            'Content-Type': 'application/json'
+        };
+
+        const data = {
+            prompt: `Dame las recomendaciones que debo tomar si tengo estos datos: ${descripcionCompleta}`,
+            max_tokens: 500
+        };
+
+        axios.post(api_url, data, { headers: headers })
+            .then(response => {
+                res.status(200).json({response});
+                console.log(response.data);
+            })
+            .catch(error => {
+                console.error("There was an error!", error);
+            });
+
+
         
     }catch(error){
         console.error(error);
-        res.status(500).json({mensaje: "Error en procesar la solicitud"});
+        res.status(500).json({mensaje: `Error en procesar la solicitud, error: ${error}`});
     }
 })
