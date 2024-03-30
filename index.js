@@ -35,7 +35,8 @@ app.post("/",async(req,res)=>{
     let textoLimpio = datosPW.map(item=> `dominio: ${item.Dominio}, valor ${item.valor}`);
     let descripcionCompleta=textoLimpio.join('\n');
     try{
-        console.log(consulta);
+        //console.log(consulta);
+        console.log(descripcionCompleta);
         res.status(200).json({mensaje: "Datos limpios", descripcionCompleta});
         
     }catch(error){
