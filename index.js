@@ -7,6 +7,7 @@ app.use(cors());
 const axios=require('axios');
 const dotenv=require('dotenv');
 const {default: helmet}=require('helmet');
+const {OpenAI}=require('openai')
 
 //servidor
 const server=http.createServer(app);
@@ -15,9 +16,6 @@ dotenv.config();
 //middleware (para procesos cliente - servidor)
 app.use(express.json());
 app.use(helmet());
-
-//IA
-const openai=require("openai");
 
 
 
@@ -47,29 +45,31 @@ app.post("/",async(req,res)=>{
         console.log(descripcionCompleta);
         //res.status(200).json({mensaje: "Datos limpios", descripcionCompleta});
 
+
         //IA
-        const api_url = "https://api.openai.com/v1/engines/g-zqhE73Pwg-nom-035/completions";
-        const headers = {
-            'Authorization': process.env.APIKEY,
-            'Content-Type': 'application/json'
-        };
+        async function main() {
+            //IA
+            const openai=new OpenAI({apiKey: `${process.env.APIKEY}`});
+            try {
+                const response = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    { role: "system", content: "Eres NOM 035, Un especialista en evaluar riesgos psicosociales basado en la NOM 035, enfocándose en aspectos laborales, liderazgo, y relaciones sociales en el trabajo. Proporciona resúmenes con puntos clave y dos recomendaciones de intervención específicas para cada riesgo identificado, manteniendo un tono profesional y formal. Prioriza soluciones prácticas y aplicables al contexto laboral, asegurando confidencialidad. Cuando la información es insuficiente o poco clara, NOM 035 Analyst solicita clarificaciones para garantizar un análisis preciso y recomendaciones relevantes. Los dominios de riesgo psicosocial son: Ambiente de trabajo, evaluando condiciones peligrosas, inseguras, deficientes e insalubres; Cargas de trabajo, buscando un equilibrio de responsabilidades y tareas basadas en habilidades y capacidad de crecimiento de empleados; Ausencia de control en el trabajo, cuando el empleado no tiene autonomía sobre sus tareas; Jornadas de trabajo y rotación de turnos excesivas, fomentando jornadas equilibradas y rotación adecuada; Interferencia en la relación trabajo-familia, evitando que las obligaciones laborales interrumpan las familiares y viceversa; Liderazgo y relaciones negativas, promoviendo una relación de cercanía y valoraciones objetivas entre empresarios y empleados; La violencia laboral, que se manifiesta a través del acoso físico y psicológico. Los niveles de riesgo son: Nulo (0), Bajo (1), Medio (2), Alto (3) y Muy alto (4), creando intervenciones que involucren acciones individuales o grupales dependiendo del nivel de riesgo." },
+                    { role: "user", content: `Si tengo estos datos, ¿qué recomendaciones me das?: ${descripcionCompleta} ` }
+                ],
+                });
 
-        const data = {
-            prompt: `Dame las recomendaciones que debo tomar si tengo estos datos: ${descripcionCompleta}`,
-            max_tokens: 500
-        };
+                console.log(JSON.stringify(response.choices[0].message, null, 2));
 
-        axios.post(api_url, data, { headers: headers })
-            .then(response => {
-                res.status(200).json({response});
-                console.log(response.data);
-            })
-            .catch(error => {
-                console.error("There was an error!", error);
-            });
+            } catch (error) {
+                console.error("Ocurrió un error al conectar con OpenAI:", error);
+            }
+            }
+          main().then(r=>{
+            console.log(r);
 
-
-        
+          })
+       
     }catch(error){
         console.error(error);
         res.status(500).json({mensaje: `Error en procesar la solicitud, error: ${error}`});
