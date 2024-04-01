@@ -60,7 +60,7 @@ app.post("/",async(req,res)=>{
                 });
 
                 console.log(JSON.stringify(response.choices[0].message, null, 2));
-
+                return JSON.stringify(response.choices[0].message, null, 2)
             } catch (error) {
                 console.error("Ocurrió un error al conectar con OpenAI:", error);
             }
