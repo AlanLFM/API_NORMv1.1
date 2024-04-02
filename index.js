@@ -1,3 +1,4 @@
+
 const express= require('express');
 const cors=require('cors');
 const http=require('http');
@@ -29,8 +30,10 @@ async function main(des) {
         ],
         });
 
-        console.log(JSON.stringify(response.choices[0].message, null, 2));
-        return JSON.stringify(response.choices[0].message, null, 2)
+        let respuesta=JSON.stringify(response.choices[0].message.content,null,2);
+        respuesta.replace(/\n/g, ' ').replace(/\\n/g, ' ').replace(/{/g, '').replace(/}/g, '').replace(/\"/g, '');
+        console.log(respuesta);
+        return respuesta;
     } catch (error) {
         console.error("Ocurrió un error al conectar con OpenAI:", error);
     }
@@ -56,7 +59,7 @@ app.post("/",async(req,res)=>{
     const datosPW=req.body;
     const consulta= `Aquí una descripción basada en los datos: ${JSON.stringify(datosPW)}`;
     let textoLimpio = datosPW.map(item=> `dominio: ${item.Dominio}, valor ${item.valor}`);
-    let descripcionCompleta=textoLimpio.join('\n');
+    let descripcionCompleta=textoLimpio.join(' ');
     try{
         //console.log(consulta);
         console.log(descripcionCompleta);
